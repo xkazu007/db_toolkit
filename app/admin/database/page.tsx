@@ -13,6 +13,10 @@ function displayColumn(column: string) {
   return column;
 }
 
+function visibleColumns(columns: string[]) {
+  return columns.filter((column) => !/^PIPE\d*$/i.test(column));
+}
+
 function dbLabel(db: string) {
   if (db === "db2") return "DB2";
   if (db === "bridge") return "Bridge ODBC";
@@ -22,6 +26,7 @@ function dbLabel(db: string) {
 export default async function AdminDatabasePage() {
   const info = getTargetInfo();
   const result = await readTargetRows(100);
+  const columns = visibleColumns(result.columns);
 
   return (
     <>
@@ -50,7 +55,7 @@ export default async function AdminDatabasePage() {
           <table className="data-table">
             <thead>
               <tr>
-                {result.columns.map((column) => (
+                {columns.map((column) => (
                   <th key={column}>{displayColumn(column)}</th>
                 ))}
               </tr>
@@ -58,14 +63,14 @@ export default async function AdminDatabasePage() {
             <tbody>
               {result.rows.map((row, index) => (
                 <tr key={String(row.NODOSS || index)}>
-                  {result.columns.map((column) => (
+                  {columns.map((column) => (
                     <td key={column}>{displayValue(row[column])}</td>
                   ))}
                 </tr>
               ))}
               {result.rows.length === 0 ? (
                 <tr>
-                  <td colSpan={Math.max(result.columns.length, 1)}>Aucune ligne trouvee.</td>
+                  <td colSpan={Math.max(columns.length, 1)}>Aucune ligne trouvee.</td>
                 </tr>
               ) : null}
             </tbody>
