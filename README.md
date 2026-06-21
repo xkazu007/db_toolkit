@@ -82,8 +82,10 @@ npm run db2:check
 Le serveur IBM i fonctionne deja via SQL-View avec le driver Windows `IBM i Access ODBC Driver`. Le chemin le plus simple est donc :
 
 - garder cette application Next.js pour l'interface
-- lancer le bridge Python sur Windows, la ou le DSN `EVOLAN_DEV` existe
+- lancer le bridge Python sur Windows, la ou le DSN/alias `EVOLAN_DEV` existe
 - configurer Next.js avec `TARGET_DB=bridge`
+
+Important : `EVOLAN_DEV` est le nom de la source ODBC Windows, pas le nom de la bibliotheque SQL. La bibliotheque/schema confirme est `ASSALAFDTA`, donc la table cible est `ASSALAFDTA.CRDEM`.
 
 Installer le bridge :
 
@@ -100,6 +102,12 @@ $env:ODBC_CONNECTION_STRING="DSN=EVOLAN_DEV;UID=adm;PWD=TON_MOT_DE_PASSE"
 $env:ODBC_TARGET_TABLE="ASSALAFDTA.CRDEM"
 $env:ODBC_KEY_COLUMN="NODOSS"
 uvicorn bridge.main:app --host 0.0.0.0 --port 8001
+```
+
+Sans DSN, la chaine directe ressemble a ceci :
+
+```powershell
+$env:ODBC_CONNECTION_STRING="DRIVER={iSeries Access ODBC Driver};SYSTEM=10.7.10.79;DATABASE=ASSALAFDTA;UID=adm;PWD=TON_MOT_DE_PASSE"
 ```
 
 Dans `.env` cote application :
