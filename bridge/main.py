@@ -1,10 +1,13 @@
 import os
 import re
+from datetime import date, datetime
+from decimal import Decimal
 from typing import Any
 
 import pyodbc
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 
@@ -34,6 +37,14 @@ DEFAULT_ALLOWED_COLUMNS = {
 
 
 app = FastAPI(title="DB Toolkit ODBC Bridge")
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(_request: Request, exc: Exception) -> JSONResponse:
+    return JSONResponse(
+        status_code=500,
+        content={"ok": False, "error": f"Erreur bridge ODBC : {exc}", "type": exc.__class__.__name__},
+    )
 
 
 class UpdateItem(BaseModel):
@@ -82,9 +93,35 @@ def connect() -> pyodbc.Connection:
         raise HTTPException(status_code=500, detail=f"Connexion ODBC echouee : {exc}") from exc
 
 
+def json_value(value: Any) -> Any:
+    if isinstance(value, Decimal):
+        return str(value)
+    if isinstance(value, (date, datetime)):
+        return value.isoformat()
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return value
+
+
 def rows_to_dicts(cursor: pyodbc.Cursor) -> list[dict[str, Any]]:
     columns = [column[0].upper() for column in cursor.description or []]
-    return [dict(zip(columns, row)) for row in cursor.fetchall()]
+    return [dict(zip(columns, [json_value(value) for value in row])) for row in cursor.fetchall()]
+
+
+def masked_connection_string() -> str:
+    return re.sub(r"(PWD=)[^;]*", r"\1****", connection_string(), flags=re.I)
+
+
+@app.get("/config")
+def config() -> dict[str, Any]:
+    return {
+        "ok": True,
+        "envFile": os.getenv("ENV_FILE", ".env"),
+        "cwd": os.getcwd(),
+        "connectionString": masked_connection_string(),
+        "table": target_table(),
+        "keyColumn": key_column(),
+    }
 
 
 @app.get("/health")
