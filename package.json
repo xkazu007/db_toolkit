@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && NEXT_DIST_DIR=.next-build next build",
-    "start": "NEXT_DIST_DIR=.next-build next start",
+    "build": "prisma generate && node scripts/next-build.mjs",
+    "start": "node scripts/next-start.mjs",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
