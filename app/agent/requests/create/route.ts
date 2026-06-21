@@ -29,7 +29,10 @@ export async function POST(request: Request) {
   }
 
   const mappings = await prisma.fieldMapping.findMany({
-    where: { id: { in: rows.map((row) => row.mappingId) }, isActive: true }
+    where: {
+      id: { in: rows.map((row) => row.mappingId) },
+      OR: [{ isActive: true }, { dbColumn: "NODOSS" }]
+    }
   });
 
   if (mappings.length !== rows.length) {

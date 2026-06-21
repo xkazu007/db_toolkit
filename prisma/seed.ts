@@ -16,6 +16,7 @@ async function main() {
   });
 
   const mappings = [
+    { label: "Num contrat", dbColumn: "NODOSS", dataType: "text", helpText: "Numero de contrat/dossier a modifier." },
     { label: "Code envoi", dbColumn: "CDENVO", dataType: "text", helpText: "Code de destination/envoi." },
     { label: "Dossier de substitution 1", dbColumn: "NOCPA1", dataType: "text", helpText: "Premier dossier de substitution." },
     { label: "Dossier de substitution 2", dbColumn: "NOCPA2", dataType: "text", helpText: "Deuxieme dossier de substitution." },
@@ -49,9 +50,9 @@ async function main() {
   await prisma.fieldMapping.updateMany({
     where: { dbColumn: "NODOSS" },
     data: {
-      label: "Numero de dossier",
-      isActive: false,
-      adminNote: "Champ identifiant utilise pour trouver la ligne cible. Il ne doit pas etre modifiable par les agents."
+      label: "Num contrat",
+      isActive: true,
+      adminNote: "Champ identifiant utilise pour trouver la ligne cible. Il peut etre modifie avec validation administrateur."
     }
   });
 }

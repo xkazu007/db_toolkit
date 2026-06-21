@@ -65,7 +65,7 @@ export default async function AdminAuditPage({
           {recentFailures.map((request) => (
             <div className="error-row" key={request.id}>
               <div>
-                <strong>Demande #{request.id} - NODOSS {request.contractNumber}</strong>
+                <strong>Demande #{request.id} - Num contrat {request.contractNumber}</strong>
                 <p>{request.failureReason || "Erreur inconnue."}</p>
               </div>
               <Link href={`/admin/requests/${request.id}`}>Voir</Link>

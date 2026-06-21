@@ -4,7 +4,7 @@ import { ModificationRows } from "./ModificationRows";
 export default async function NewRequestPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const params = await searchParams;
   const mappings = await prisma.fieldMapping.findMany({
-    where: { isActive: true },
+    where: { OR: [{ isActive: true }, { dbColumn: "NODOSS" }] },
     select: { id: true, label: true, helpText: true },
     orderBy: { label: "asc" }
   });
@@ -18,12 +18,12 @@ export default async function NewRequestPage({ searchParams }: { searchParams: P
         </div>
       </div>
 
-      {params.error ? <p className="error">Verifiez le NODOSS, les lignes de modification et les champs en double.</p> : null}
+      {params.error ? <p className="error">Verifiez le num contrat, les lignes de modification et les champs en double.</p> : null}
 
       <form action="/agent/requests/create" method="post" className="grid">
         <section className="panel grid two">
           <label>
-            NODOSS
+            Num contrat actuel
             <input name="contractNumber" placeholder="1045810" required />
           </label>
           <label>

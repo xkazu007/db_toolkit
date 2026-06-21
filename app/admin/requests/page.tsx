@@ -48,7 +48,7 @@ export default async function AdminRequestsPage({
             <tr>
               <th>Selection</th>
               <th>ID</th>
-              <th>NODOSS</th>
+              <th>Num contrat</th>
               <th>Demande par</th>
               <th>Statut</th>
               <th>Champs</th>

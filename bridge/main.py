@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 load_dotenv(os.getenv("ENV_FILE", ".env"))
 
 DEFAULT_ALLOWED_COLUMNS = {
+    "NODOSS",
     "CDENVO",
     "NOCPA1",
     "NOCPA2",
@@ -75,8 +76,8 @@ def key_column() -> str:
 def allowed_columns() -> set[str]:
     configured = os.getenv("ODBC_ALLOWED_COLUMNS")
     if not configured:
-        return DEFAULT_ALLOWED_COLUMNS
-    return {quote_identifier(column.strip()) for column in configured.split(",") if column.strip()}
+        return DEFAULT_ALLOWED_COLUMNS | {key_column()}
+    return {quote_identifier(column.strip()) for column in configured.split(",") if column.strip()} | {key_column()}
 
 
 def connection_string() -> str:
@@ -160,8 +161,6 @@ def update_row(request: UpdateRequest) -> dict[str, Any]:
 
     for item in request.updates:
         column = quote_identifier(item.dbColumn)
-        if column == key:
-            raise HTTPException(status_code=400, detail=f"La colonne {key} ne peut pas etre modifiee.")
         if column in seen:
             raise HTTPException(status_code=400, detail=f"Champ en double : {column}")
         if column not in allowed:

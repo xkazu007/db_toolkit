@@ -266,6 +266,35 @@ table {
   overflow: hidden;
 }
 
+.table-scroll {
+  width: 100%;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+}
+
+.data-table {
+  min-width: max-content;
+  border: 0;
+  border-radius: 0;
+}
+
+.data-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f2f0e8;
+  white-space: nowrap;
+}
+
+.data-table td {
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .sql-preview {
   display: block;
   white-space: pre-wrap;

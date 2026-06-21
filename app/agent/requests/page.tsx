@@ -25,7 +25,7 @@ export default async function AgentRequestsPage() {
         <thead>
           <tr>
             <th>ID</th>
-            <th>NODOSS</th>
+            <th>Num contrat</th>
             <th>Statut</th>
             <th>Champs</th>
             <th>Creee le</th>
