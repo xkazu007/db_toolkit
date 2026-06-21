@@ -86,9 +86,14 @@ def connection_string() -> str:
     return value
 
 
+def use_autocommit() -> bool:
+    value = os.getenv("ODBC_AUTOCOMMIT", "true").strip().lower()
+    return value not in {"0", "false", "no", "non"}
+
+
 def connect() -> pyodbc.Connection:
     try:
-        return pyodbc.connect(connection_string(), autocommit=False)
+        return pyodbc.connect(connection_string(), autocommit=use_autocommit())
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Connexion ODBC echouee : {exc}") from exc
 
@@ -173,11 +178,11 @@ def update_row(request: UpdateRequest) -> dict[str, Any]:
         cursor.execute(exists_sql, request.contractNumber)
         exists = int(cursor.fetchone()[0])
         if exists == 0:
-            conn.rollback()
             return {"ok": False, "rowsAffected": 0, "error": f"Aucune ligne trouvee pour {key}={request.contractNumber}", "sql": sql}
 
         cursor.execute(sql, [*values, request.contractNumber])
-        conn.commit()
+        if not conn.autocommit:
+            conn.commit()
         rows_affected = cursor.rowcount if cursor.rowcount and cursor.rowcount > 0 else exists
 
     return {"ok": rows_affected > 0, "rowsAffected": rows_affected, "sql": sql}
