@@ -4,6 +4,8 @@ node_modules
 dev.db
 dev.db-journal
 .env
+.env.prod
+.env*.local
 .venv
 __pycache__
 *.pyc
