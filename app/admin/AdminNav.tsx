@@ -6,7 +6,7 @@ import { logoutAction } from "@/app/actions/auth";
 
 const links = [
   { href: "/admin/requests", label: "Demandes" },
-  { href: "/admin/database", label: "Table CRCON" },
+  { href: "/admin/database", label: "Base cible" },
   { href: "/admin/mappings", label: "Champs" },
   { href: "/admin/users", label: "Utilisateurs" },
   { href: "/admin/audit", label: "Journal d'audit" }

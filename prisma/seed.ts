@@ -51,7 +51,7 @@ async function main() {
     data: {
       label: "Numero de dossier",
       isActive: false,
-      adminNote: "Champ identifiant utilise pour trouver la ligne CRCON. Il ne doit pas etre modifiable par les agents."
+      adminNote: "Champ identifiant utilise pour trouver la ligne cible. Il ne doit pas etre modifiable par les agents."
     }
   });
 }

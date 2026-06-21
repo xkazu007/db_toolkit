@@ -87,6 +87,8 @@ Le serveur IBM i fonctionne deja via SQL-View avec le driver Windows `IBM i Acce
 
 Important : `EVOLAN_DEV` est le nom de la source ODBC Windows, pas le nom de la bibliotheque SQL. La bibliotheque/schema confirme est `ASSALAFDTA`, donc la table cible est `ASSALAFDTA.CRDEM`.
 
+En production, l'application accede a `ASSALAFDTA.CRDEM`. Les references a `CRCON` concernent uniquement la table de demo locale Postgres/DB2 utilisee pour tester sans la vraie base IBM i.
+
 Installer le bridge :
 
 ```powershell
