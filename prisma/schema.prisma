@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  username    String   @unique
+  role        String
+  isActive    Boolean  @default(true)
+  passwordNote String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  requestedRequests ModificationRequest[] @relation("RequestedBy")
+  approvedRequests  ModificationRequest[] @relation("ApprovedBy")
+  auditLogs         AuditLog[]
+}
+
+model FieldMapping {
+  id             Int      @id @default(autoincrement())
+  label          String
+  dbColumn       String
+  dataType       String   @default("text")
+  isRequired     Boolean  @default(true)
+  isActive       Boolean  @default(true)
+  validationRule String?
+  helpText       String?
+  adminNote      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  items ModificationRequestItem[]
+}
+
+model ModificationRequest {
+  id                Int      @id @default(autoincrement())
+  contractNumber    String
+  status            String   @default("pending")
+  requestedByUserId Int
+  approvedByUserId  Int?
+  createdAt         DateTime @default(now())
+  approvedAt        DateTime?
+  rejectedAt        DateTime?
+  failureReason     String?
+  comment           String?
+
+  requestedBy User  @relation("RequestedBy", fields: [requestedByUserId], references: [id])
+  approvedBy  User? @relation("ApprovedBy", fields: [approvedByUserId], references: [id])
+  items       ModificationRequestItem[]
+  auditLogs   AuditLog[]
+}
+
+model ModificationRequestItem {
+  id              Int      @id @default(autoincrement())
+  requestId       Int
+  fieldMappingId  Int?
+  labelSnapshot   String
+  dbColumnSnapshot String
+  newValue        String
+  createdAt       DateTime @default(now())
+
+  request      ModificationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  fieldMapping FieldMapping?       @relation(fields: [fieldMappingId], references: [id])
+}
+
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  actorUserId Int?
+  action      String
+  requestId   Int?
+  detailsJson String?
+  createdAt   DateTime @default(now())
+
+  actor   User?                 @relation(fields: [actorUserId], references: [id])
+  request ModificationRequest?  @relation(fields: [requestId], references: [id])
+}

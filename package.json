@@ -1,0 +1,38 @@
+{
+  "name": "contract-modification-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && NEXT_DIST_DIR=.next-build next build",
+    "start": "NEXT_DIST_DIR=.next-build next start",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "target:check": "node scripts/check-target-db.mjs",
+    "db2:check": "TARGET_DB=db2 node scripts/check-target-db.mjs",
+    "bridge:check": "TARGET_DB=bridge node scripts/check-target-db.mjs",
+    "pg:init": "node scripts/init-postgres.mjs",
+    "pg:check": "TARGET_DB=postgres node scripts/check-target-db.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.9.0",
+    "ibm_db": "^3.3.0",
+    "next": "^15.3.3",
+    "pg": "^8.22.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "@types/pg": "^8.20.0",
+    "@types/react": "^19.0.12",
+    "@types/react-dom": "^19.0.4",
+    "prisma": "^6.9.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  }
+}

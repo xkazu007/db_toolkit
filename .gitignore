@@ -1,0 +1,12 @@
+node_modules
+.next
+.next-build
+dev.db
+dev.db-journal
+.env
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+db_toolkit_deploy.zip
+Copie de CRCON.xlsx

@@ -1,0 +1,88 @@
+WINDOWS SERVER COMMANDS
+=======================
+
+Confirmed from SQL-View:
+
+- ODBC DSN: EVOLAN_DEV
+- IBM i / iSeries server IP: 10.7.10.79
+- Confirmed table: ASSALAFDTA.CRDEM
+- Query that worked in SQL-View:
+  SELECT COUNT(*) FROM ASSALAFDTA.CRDEM
+
+Do not commit real passwords to Git. Replace TON_MOT_DE_PASSE directly on the server.
+
+
+OPTION A - RECOMMENDED: USE WINDOWS IBM i ACCESS ODBC DRIVER
+------------------------------------------------------------
+
+This uses the same Windows ODBC driver/DSN as SQL-View.
+
+1. Open PowerShell in the project folder.
+
+2. Create and activate the Python environment.
+
+py -m venv .venv
+.\.venv\Scripts\activate
+
+3. Install the bridge dependencies.
+
+pip install -r bridge\requirements.txt
+
+4. Start the ODBC bridge.
+
+$env:ODBC_CONNECTION_STRING="DSN=EVOLAN_DEV;UID=adm;PWD=TON_MOT_DE_PASSE"
+$env:ODBC_TARGET_TABLE="ASSALAFDTA.CRDEM"
+$env:ODBC_KEY_COLUMN="NODOSS"
+$env:ODBC_ALLOWED_COLUMNS="CDENVO,NOCPA1,NOCPA2,NOCPA3,NOCPA4,NOCPA5,CDAGEN,NMTITU,CINALP,CINNUM,CDMATR,IMPUTA,MTCRED,MNTTOT,TXTEG,MTMENS,NBMOIS,DTECHD,DTECHF"
+uvicorn bridge.main:app --host 0.0.0.0 --port 8001
+
+5. In another PowerShell window, test the bridge.
+
+Invoke-RestMethod http://127.0.0.1:8001/health
+Invoke-RestMethod "http://127.0.0.1:8001/rows?limit=5"
+
+6. Configure the Next.js app in .env.
+
+TARGET_DB=bridge
+BRIDGE_URL=http://127.0.0.1:8001
+TARGET_TABLE=ASSALAFDTA.CRDEM
+TARGET_KEY_COLUMN=NODOSS
+
+7. Install and start the app.
+
+npm install
+npm run db:push
+npm run db:seed
+npm run build
+npm run start
+
+
+OPTION B: DOCKER DB2 CHECK
+--------------------------
+
+This uses the Linux ibm_db driver, not the Windows IBM i Access ODBC driver.
+If you see SQL1598N licensing problem, use Option A instead.
+
+1. Check the IBM i port from Windows.
+
+Test-NetConnection 10.7.10.79 -Port 446
+
+2. Build the test image.
+
+docker build --no-cache --target db-check -t contract-db-check .
+
+3. Test DB2.
+
+docker run --rm -e TARGET_DB=db2 -e DB2_CONNECTION_STRING="DATABASE=*LOCAL;HOSTNAME=10.7.10.79;UID=adm;PWD=TON_MOT_DE_PASSE;PORT=446;PROTOCOL=TCPIP;CurrentSchema=ASSALAFDTA" -e DB2_TARGET_TABLE=ASSALAFDTA.CRDEM -e DB2_CONTRACT_COLUMN=NODOSS -e SAMPLE_NODOSS=__NO_MATCH__ contract-db-check
+
+Expected success output:
+
+Connexion DB2 OK
+Table cible : ASSALAFDTA.CRDEM
+Colonne identifiant : NODOSS
+Nombre de lignes : ...
+Ligne exemple NODOSS=__NO_MATCH__:
+null
+
+The null row is OK because __NO_MATCH__ is only used to avoid depending on a real NODOSS.
+The important part is "Connexion DB2 OK" and "Nombre de lignes".
