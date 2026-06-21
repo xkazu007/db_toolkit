@@ -30,29 +30,34 @@ py -m venv .venv
 
 pip install -r bridge\requirements.txt
 
-4. Start the ODBC bridge.
+4. Create a file named .env in the project folder.
 
-$env:ODBC_CONNECTION_STRING="DSN=EVOLAN_DEV;UID=adm;PWD=TON_MOT_DE_PASSE"
-$env:ODBC_TARGET_TABLE="ASSALAFDTA.CRDEM"
-$env:ODBC_KEY_COLUMN="NODOSS"
-$env:ODBC_ALLOWED_COLUMNS="CDENVO,NOCPA1,NOCPA2,NOCPA3,NOCPA4,NOCPA5,CDAGEN,NMTITU,CINALP,CINNUM,CDMATR,IMPUTA,MTCRED,MNTTOT,TXTEG,MTMENS,NBMOIS,DTECHD,DTECHF"
-uvicorn bridge.main:app --host 0.0.0.0 --port 8001
+DATABASE_URL="file:./prod.db"
+APP_SESSION_SECRET="change-this-production-secret"
+
+TARGET_DB="bridge"
+BRIDGE_URL="http://127.0.0.1:8001"
+TARGET_TABLE="ASSALAFDTA.CRDEM"
+TARGET_KEY_COLUMN="NODOSS"
+
+ODBC_CONNECTION_STRING="DSN=EVOLAN_DEV;UID=adm;PWD=TON_MOT_DE_PASSE"
+ODBC_TARGET_TABLE="ASSALAFDTA.CRDEM"
+ODBC_KEY_COLUMN="NODOSS"
+ODBC_ALLOWED_COLUMNS="CDENVO,NOCPA1,NOCPA2,NOCPA3,NOCPA4,NOCPA5,CDAGEN,NMTITU,CINALP,CINNUM,CDMATR,IMPUTA,MTCRED,MNTTOT,TXTEG,MTMENS,NBMOIS,DTECHD,DTECHF"
 
 If you do not want to use the DSN, use the driver directly and keep ASSALAFDTA as the database/library value:
 
-$env:ODBC_CONNECTION_STRING="DRIVER={iSeries Access ODBC Driver};SYSTEM=10.7.10.79;DATABASE=ASSALAFDTA;UID=adm;PWD=TON_MOT_DE_PASSE"
+ODBC_CONNECTION_STRING="DRIVER={iSeries Access ODBC Driver};SYSTEM=10.7.10.79;DATABASE=ASSALAFDTA;UID=adm;PWD=TON_MOT_DE_PASSE"
 
-5. In another PowerShell window, test the bridge.
+5. Start the ODBC bridge.
+
+.\.venv\Scripts\activate
+uvicorn bridge.main:app --host 0.0.0.0 --port 8001
+
+6. In another PowerShell window, test the bridge.
 
 Invoke-RestMethod http://127.0.0.1:8001/health
 Invoke-RestMethod "http://127.0.0.1:8001/rows?limit=5"
-
-6. Configure the Next.js app in .env.
-
-TARGET_DB=bridge
-BRIDGE_URL=http://127.0.0.1:8001
-TARGET_TABLE=ASSALAFDTA.CRDEM
-TARGET_KEY_COLUMN=NODOSS
 
 7. Install and start the app.
 

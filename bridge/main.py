@@ -3,9 +3,12 @@ import re
 from typing import Any
 
 import pyodbc
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 
+
+load_dotenv(os.getenv("ENV_FILE", ".env"))
 
 DEFAULT_ALLOWED_COLUMNS = {
     "CDENVO",
