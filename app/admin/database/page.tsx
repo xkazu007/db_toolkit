@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { getBridgeStatus } from "@/app/actions/bridge";
 import { getTargetInfo, readTargetRows } from "@/lib/target-db";
 
 function displayValue(value: unknown) {
@@ -23,10 +25,17 @@ function dbLabel(db: string) {
   return "Postgres";
 }
 
-export default async function AdminDatabasePage() {
+export default async function AdminDatabasePage({
+  searchParams
+}: {
+  searchParams: Promise<{ load?: string }>;
+}) {
+  const params = await searchParams;
   const info = getTargetInfo();
-  const result = await readTargetRows(100);
-  const columns = visibleColumns(result.columns);
+  const shouldLoad = params.load === "1";
+  const bridgeStatus = info.db === "bridge" ? await getBridgeStatus() : null;
+  const result = shouldLoad ? await readTargetRows(100) : null;
+  const columns = visibleColumns(result?.columns || []);
 
   return (
     <>
@@ -46,11 +55,31 @@ export default async function AdminDatabasePage() {
           <p className="eyebrow">Identifiant ligne</p>
           <strong>{displayColumn(info.keyColumn)} ({info.keyColumn})</strong>
         </div>
+        {bridgeStatus ? (
+          <>
+            <div>
+              <p className="eyebrow">Bridge IBM</p>
+              <strong>{bridgeStatus.ok ? (bridgeStatus.enabled ? "Active" : "Desactive") : "Injoignable"}</strong>
+            </div>
+            <div>
+              <p className="eyebrow">ODBC pooling</p>
+              <strong>{bridgeStatus.pooling ? "Actif" : "Desactive"}</strong>
+            </div>
+          </>
+        ) : null}
       </section>
 
-      {!result.ok ? <p className="error">{result.error || "Lecture de la table impossible."}</p> : null}
+      <section className="panel actions">
+        <Link className="button secondary" href="/admin/database?load=1">
+          Charger CRDEM
+        </Link>
+      </section>
 
-      {result.ok ? (
+      {bridgeStatus && !bridgeStatus.ok ? <p className="error">{bridgeStatus.error}</p> : null}
+      {!shouldLoad ? <p className="hint">Aucune requete IBM n'est lancee automatiquement. Cliquez sur Charger CRDEM pour lire la table.</p> : null}
+      {result && !result.ok ? <p className="error">{result.error || "Lecture de la table impossible."}</p> : null}
+
+      {result?.ok ? (
         <div className="table-scroll">
           <table className="data-table">
             <thead>

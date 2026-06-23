@@ -66,6 +66,11 @@ textarea {
   gap: 8px;
 }
 
+.nav-stack {
+  display: grid;
+  gap: 18px;
+}
+
 .nav a,
 .logout {
   display: block;
@@ -97,6 +102,22 @@ textarea {
   gap: 12px;
 }
 
+.bridge-box {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.bridge-box.is-on {
+  background: rgba(20, 108, 95, 0.2);
+}
+
+.bridge-box.is-off {
+  background: rgba(161, 60, 49, 0.18);
+}
+
 .account-label {
   margin: 0 0 4px;
   color: rgba(247, 247, 244, 0.66);
@@ -116,6 +137,11 @@ textarea {
 .logout:hover {
   background: #a13c31;
   border-color: #a13c31;
+}
+
+.danger-toggle {
+  background: rgba(161, 60, 49, 0.72);
+  border-color: rgba(161, 60, 49, 0.72);
 }
 
 .main {

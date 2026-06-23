@@ -12,6 +12,9 @@ from pydantic import BaseModel, Field
 
 
 load_dotenv(os.getenv("ENV_FILE", ".env"))
+pyodbc.pooling = False
+
+bridge_enabled = os.getenv("ODBC_BRIDGE_ENABLED", "true").strip().lower() not in {"0", "false", "no", "non"}
 
 DEFAULT_ALLOWED_COLUMNS = {
     "NODOSS",
@@ -87,12 +90,18 @@ def connection_string() -> str:
     return value
 
 
+def require_enabled() -> None:
+    if not bridge_enabled:
+        raise HTTPException(status_code=503, detail="Bridge ODBC desactive par l'administrateur.")
+
+
 def use_autocommit() -> bool:
     value = os.getenv("ODBC_AUTOCOMMIT", "true").strip().lower()
     return value not in {"0", "false", "no", "non"}
 
 
 def connect() -> pyodbc.Connection:
+    require_enabled()
     try:
         return pyodbc.connect(connection_string(), autocommit=use_autocommit())
     except Exception as exc:
@@ -127,7 +136,28 @@ def config() -> dict[str, Any]:
         "connectionString": masked_connection_string(),
         "table": target_table(),
         "keyColumn": key_column(),
+        "enabled": bridge_enabled,
+        "pooling": pyodbc.pooling,
     }
+
+
+@app.get("/control/status")
+def control_status() -> dict[str, Any]:
+    return {"ok": True, "enabled": bridge_enabled, "pooling": pyodbc.pooling}
+
+
+@app.post("/control/enable")
+def control_enable() -> dict[str, Any]:
+    global bridge_enabled
+    bridge_enabled = True
+    return {"ok": True, "enabled": bridge_enabled, "pooling": pyodbc.pooling}
+
+
+@app.post("/control/disable")
+def control_disable() -> dict[str, Any]:
+    global bridge_enabled
+    bridge_enabled = False
+    return {"ok": True, "enabled": bridge_enabled, "pooling": pyodbc.pooling}
 
 
 @app.get("/health")
