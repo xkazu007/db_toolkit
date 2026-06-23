@@ -41,7 +41,7 @@ export function ModificationRows({ mappings }: { mappings: Mapping[] }) {
           </label>
           <label>
             Nouvelle valeur
-            <input name="newValue" required={index === 0} />
+            <input name="newValue" placeholder="Laisser vide pour effacer le champ" />
           </label>
           {index > 0 ? (
             <button
@@ -59,7 +59,7 @@ export function ModificationRows({ mappings }: { mappings: Mapping[] }) {
         </div>
       ))}
 
-      <p className="hint">Une modification est obligatoire. Cliquez sur + pour ajouter un autre champ. Les doublons sont refuses.</p>
+      <p className="hint">Une modification est obligatoire. Une valeur vide sera envoyee comme champ vide. Les doublons sont refuses.</p>
     </section>
   );
 }

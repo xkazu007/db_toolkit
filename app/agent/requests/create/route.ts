@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
   const rows = mappingIds
     .map((mappingId, index) => ({ mappingId, newValue: values[index] }))
-    .filter((row) => row.mappingId && row.newValue);
+    .filter((row) => row.mappingId);
 
   const uniqueMappingIds = new Set(rows.map((row) => row.mappingId));
   if (!contractNumber || rows.length === 0 || uniqueMappingIds.size !== rows.length) {
