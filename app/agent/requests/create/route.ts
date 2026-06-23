@@ -18,13 +18,14 @@ export async function POST(request: Request) {
   const comment = String(formData.get("comment") || "").trim();
   const mappingIds = formData.getAll("mappingId").map((value) => Number(value));
   const values = formData.getAll("newValue").map((value) => String(value).trim());
+  const emptyIndexes = new Set(formData.getAll("emptyField").map((value) => Number(value)));
 
   const rows = mappingIds
-    .map((mappingId, index) => ({ mappingId, newValue: values[index] }))
+    .map((mappingId, index) => ({ mappingId, newValue: emptyIndexes.has(index) ? "" : values[index], emptyField: emptyIndexes.has(index) }))
     .filter((row) => row.mappingId);
 
   const uniqueMappingIds = new Set(rows.map((row) => row.mappingId));
-  if (!contractNumber || rows.length === 0 || uniqueMappingIds.size !== rows.length) {
+  if (!contractNumber || rows.length === 0 || uniqueMappingIds.size !== rows.length || rows.some((row) => !row.emptyField && !row.newValue)) {
     return redirectTo("/agent/requests/new?error=invalid", request);
   }
 

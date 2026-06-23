@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { approveRequestAction, rejectRequestAction } from "@/app/actions/requests";
+import { approveRequestAction, rejectRequestAction, retryFailedRequestAction } from "@/app/actions/requests";
 import { buildFilledTargetUpdatePreview } from "@/lib/target-db";
 import { formatDate, statusClass, statusLabel } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
@@ -59,7 +59,7 @@ export default async function AdminRequestDetailPage({ params }: { params: Promi
             <tr key={item.id}>
               <td>{item.labelSnapshot}</td>
               <td>{item.dbColumnSnapshot}</td>
-              <td>{item.newValue}</td>
+              <td>{item.newValue || "(champ vide)"}</td>
             </tr>
           ))}
         </tbody>
@@ -80,6 +80,15 @@ export default async function AdminRequestDetailPage({ params }: { params: Promi
           <form action={rejectRequestAction}>
             <input type="hidden" name="id" value={request.id} />
             <button className="danger" type="submit">Rejeter</button>
+          </form>
+        </div>
+      ) : null}
+
+      {request.status === "failed" ? (
+        <div className="actions" style={{ marginTop: 18 }}>
+          <form action={retryFailedRequestAction}>
+            <input type="hidden" name="id" value={request.id} />
+            <button type="submit">Relancer la demande</button>
           </form>
         </div>
       ) : null}

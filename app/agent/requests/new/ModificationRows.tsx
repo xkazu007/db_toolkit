@@ -10,6 +10,7 @@ type Mapping = {
 
 export function ModificationRows({ mappings }: { mappings: Mapping[] }) {
   const [rows, setRows] = useState([0]);
+  const [emptyRows, setEmptyRows] = useState<Record<number, boolean>>({});
 
   return (
     <section className="panel grid">
@@ -41,7 +42,22 @@ export function ModificationRows({ mappings }: { mappings: Mapping[] }) {
           </label>
           <label>
             Nouvelle valeur
-            <input name="newValue" placeholder="Laisser vide pour effacer le champ" />
+            <input name="newValue" disabled={emptyRows[rowId] === true} required={emptyRows[rowId] !== true} />
+          </label>
+          <label className="check-label">
+            <input
+              name="emptyField"
+              type="checkbox"
+              value={String(index)}
+              checked={emptyRows[rowId] === true}
+              onChange={(event) =>
+                setEmptyRows((current) => ({
+                  ...current,
+                  [rowId]: event.target.checked
+                }))
+              }
+            />
+            Vider ce champ
           </label>
           {index > 0 ? (
             <button
@@ -49,7 +65,14 @@ export function ModificationRows({ mappings }: { mappings: Mapping[] }) {
               type="button"
               aria-label={`Retirer le champ ${index + 1}`}
               title="Retirer le champ"
-              onClick={() => setRows((current) => current.filter((id) => id !== rowId))}
+              onClick={() => {
+                setRows((current) => current.filter((id) => id !== rowId));
+                setEmptyRows((current) => {
+                  const next = { ...current };
+                  delete next[rowId];
+                  return next;
+                });
+              }}
             >
               -
             </button>
@@ -59,7 +82,7 @@ export function ModificationRows({ mappings }: { mappings: Mapping[] }) {
         </div>
       ))}
 
-      <p className="hint">Une modification est obligatoire. Une valeur vide sera envoyee comme champ vide. Les doublons sont refuses.</p>
+      <p className="hint">Une modification est obligatoire. Cochez Vider ce champ pour envoyer une valeur vide. Les doublons sont refuses.</p>
     </section>
   );
 }

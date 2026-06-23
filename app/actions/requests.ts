@@ -10,8 +10,17 @@ import { prisma } from "@/lib/prisma";
 export async function approveRequestAction(formData: FormData) {
   const user = await requireUser("admin");
   const id = Number(formData.get("id"));
-  await approveOne(id, user.id);
+  await approveOne(id, user.id, ["pending"]);
   revalidatePath("/admin/requests");
+  redirect(`/admin/requests/${id}`);
+}
+
+export async function retryFailedRequestAction(formData: FormData) {
+  const user = await requireUser("admin");
+  const id = Number(formData.get("id"));
+  await approveOne(id, user.id, ["failed"]);
+  revalidatePath("/admin/requests");
+  revalidatePath("/admin/audit");
   redirect(`/admin/requests/${id}`);
 }
 
@@ -34,7 +43,7 @@ export async function approveSelectedAction(formData: FormData) {
   let failed = 0;
 
   for (const id of ids) {
-    const result = await approveOne(id, user.id);
+    const result = await approveOne(id, user.id, ["pending"]);
     if (result) approved += 1;
     else failed += 1;
   }
@@ -51,7 +60,7 @@ export async function approveAllAction() {
   let failed = 0;
 
   for (const item of pending) {
-    const result = await approveOne(item.id, user.id);
+    const result = await approveOne(item.id, user.id, ["pending"]);
     if (result) approved += 1;
     else failed += 1;
   }
@@ -61,13 +70,13 @@ export async function approveAllAction() {
   redirect(`/admin/requests?status=${status}&summary=approuvees:${approved},echouees:${failed}`);
 }
 
-async function approveOne(id: number, actorUserId: number) {
+async function approveOne(id: number, actorUserId: number, allowedStatuses: string[]) {
   const request = await prisma.modificationRequest.findUnique({
     where: { id },
     include: { items: true }
   });
 
-  if (!request || request.status !== "pending") return false;
+  if (!request || !allowedStatuses.includes(request.status)) return false;
 
   const allowedColumns = await prisma.fieldMapping.findMany({
     where: { dbColumn: { in: request.items.map((item) => item.dbColumnSnapshot) } },
