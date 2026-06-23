@@ -16,8 +16,11 @@ function bridgeUrl() {
 }
 
 export async function getBridgeStatus(): Promise<BridgeStatus> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 800);
+
   try {
-    const response = await fetch(`${bridgeUrl()}/control/status`, { cache: "no-store" });
+    const response = await fetch(`${bridgeUrl()}/control/status`, { cache: "no-store", signal: controller.signal });
     const payload = (await response.json().catch(() => ({}))) as Partial<BridgeStatus> & { detail?: string };
     if (!response.ok || payload.ok !== true) {
       return {
@@ -36,6 +39,8 @@ export async function getBridgeStatus(): Promise<BridgeStatus> {
       pooling: false,
       error: error instanceof Error ? error.message : "Bridge ODBC injoignable."
     };
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
