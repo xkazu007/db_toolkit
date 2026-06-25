@@ -23,6 +23,14 @@ npm run dev
 
 Ouvrir `http://localhost:3000`. Si le port est deja utilise, Next.js affiche un autre port, par exemple `http://localhost:3002`.
 
+Sur le reseau local, ouvre l'application avec l'adresse IP du serveur :
+
+```txt
+http://SERVER_IP:3000
+```
+
+Les redirections de l'application sont relatives, donc elles gardent l'adresse utilisee par le navigateur. `BRIDGE_URL=http://127.0.0.1:8001` reste correct si le bridge Python tourne sur le meme serveur que Next.js, car cet appel est fait cote serveur.
+
 ## Base cible locale avec Postgres
 
 Pour tester sans DB2, l'application peut mettre a jour une table Postgres locale.

@@ -69,6 +69,11 @@ npm run db:seed
 npm run build
 npm run start
 
+The app listens on all local network interfaces by default.
+From another machine on the same LAN, open:
+
+http://SERVER_IP:3000
+
 
 OPTION B: DOCKER DB2 CHECK
 --------------------------
