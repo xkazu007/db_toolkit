@@ -38,6 +38,7 @@ Pour cibler IBM i/ODBC directement depuis Django, lance l'application sur la mac
 ```txt
 TARGET_DB=odbc
 ODBC_CONNECTION_STRING=DSN=EVOLAN_DEV;UID=adm;PWD=TON_MOT_DE_PASSE
+ODBC_AUTOCOMMIT=true
 TARGET_TABLE=ASSALAFDTA.CRDEM
 TARGET_KEY_COLUMN=NODOSS
 DJANGO_SECRET_KEY=change-this-production-secret

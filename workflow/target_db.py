@@ -97,14 +97,16 @@ def update_odbc(contract_number: str, updates: list[dict[str, str]]) -> TargetRe
     sql = build_update_sql(updates)
     params = [item["value"] for item in updates] + [contract_number]
     connection_string = os.environ.get("ODBC_CONNECTION_STRING") or os.environ.get("DB2_CONNECTION_STRING")
+    autocommit = os.environ.get("ODBC_AUTOCOMMIT", "true").lower() in {"1", "true", "yes", "on"}
     if not connection_string:
         return TargetResult(ok=False, error="ODBC_CONNECTION_STRING n'est pas configure.", sql=sql)
     try:
-        with pyodbc.connect(connection_string) as conn:
+        with pyodbc.connect(connection_string, autocommit=autocommit) as conn:
             cursor = conn.cursor()
             cursor.execute(sql, params)
             rows = cursor.rowcount if cursor.rowcount != -1 else 0
-            conn.commit()
+            if not autocommit:
+                conn.commit()
         return TargetResult(ok=rows > 0, rows_affected=rows, error="" if rows > 0 else "ODBC a mis a jour 0 ligne.", sql=sql)
     except Exception as exc:
         return TargetResult(ok=False, error=str(exc), sql=sql)
