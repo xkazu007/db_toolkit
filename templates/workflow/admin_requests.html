@@ -1,0 +1,44 @@
+{% extends "workflow/base.html" %}
+
+{% block content %}
+  <div class="topbar">
+    <div>
+      <p class="eyebrow">Espace administrateur</p>
+      <h1>Demandes</h1>
+    </div>
+    <form method="post" action="{% url 'approve_all' %}">
+      {% csrf_token %}
+      <button type="submit">Approuver tout</button>
+    </form>
+  </div>
+  <div class="filters">
+    {% for value,label in statuses %}
+      <a class="button {% if value != status %}secondary{% endif %}" href="{% url 'admin_requests' %}?status={{ value }}">{{ label }}</a>
+    {% endfor %}
+  </div>
+  <form method="post" action="{% url 'approve_selected' %}">
+    {% csrf_token %}
+    <table>
+      <thead>
+        <tr><th></th><th>ID</th><th>Num contrat</th><th>Demande par</th><th>Statut</th><th>Champs</th><th>Creee le</th><th>Ouvrir</th></tr>
+      </thead>
+      <tbody>
+        {% for item in requests %}
+          <tr>
+            <td>{% if item.status == "pending" %}<input type="checkbox" name="request_id" value="{{ item.id }}">{% else %}-{% endif %}</td>
+            <td>#{{ item.id }}</td>
+            <td>{{ item.contract_number }}</td>
+            <td>{{ item.requested_by.username }}</td>
+            <td><span class="status status-{{ item.status }}">{{ item.get_status_display }}</span></td>
+            <td>{{ item.items.count }}</td>
+            <td>{{ item.created_at|date:"d/m/Y H:i" }}</td>
+            <td><a href="{% url 'admin_request_detail' item.id %}">Revoir</a></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8">Aucune demande pour ce filtre.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="actions"><button type="submit">Approuver la selection</button></div>
+  </form>
+{% endblock %}

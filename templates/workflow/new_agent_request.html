@@ -1,0 +1,36 @@
+{% extends "workflow/base.html" %}
+
+{% block content %}
+  <div class="topbar">
+    <div>
+      <p class="eyebrow">Espace agent</p>
+      <h1>Nouvelle demande</h1>
+    </div>
+  </div>
+  <form method="post" class="form">
+    {% csrf_token %}
+    <section class="panel grid two">
+      <label>Num contrat actuel <input name="contract_number" required placeholder="1045810"></label>
+      <label>Commentaire <input name="comment" placeholder="Contexte optionnel"></label>
+    </section>
+    <section class="panel">
+      <h2>Modifications</h2>
+      {% for index in row_range %}
+        <div class="mod-row">
+          <label>Champ {{ forloop.counter }}
+            <select name="mapping_{{ index }}">
+              <option value="">Choisir un champ</option>
+              {% for mapping in mappings %}
+                <option value="{{ mapping.id }}">{{ mapping.label }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>Nouvelle valeur <input name="value_{{ index }}"></label>
+          <label class="check"><input type="checkbox" name="empty_{{ index }}"> Vider</label>
+        </div>
+      {% endfor %}
+      <p class="hint">Remplissez au moins une ligne. Les champs en double sont refuses.</p>
+    </section>
+    <button type="submit">Soumettre</button>
+  </form>
+{% endblock %}

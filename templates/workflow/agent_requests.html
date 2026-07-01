@@ -1,0 +1,30 @@
+{% extends "workflow/base.html" %}
+
+{% block content %}
+  <div class="topbar">
+    <div>
+      <p class="eyebrow">Espace agent</p>
+      <h1>Mes demandes</h1>
+    </div>
+    <a class="button" href="{% url 'new_agent_request' %}">Nouvelle demande</a>
+  </div>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Num contrat</th><th>Statut</th><th>Champs</th><th>Creee le</th><th>Echec</th></tr>
+    </thead>
+    <tbody>
+      {% for item in requests %}
+        <tr>
+          <td>#{{ item.id }}</td>
+          <td>{{ item.contract_number }}</td>
+          <td><span class="status status-{{ item.status }}">{{ item.get_status_display }}</span></td>
+          <td>{{ item.items.count }}</td>
+          <td>{{ item.created_at|date:"d/m/Y H:i" }}</td>
+          <td>{{ item.failure_reason|default:"-" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6">Aucune demande pour le moment.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

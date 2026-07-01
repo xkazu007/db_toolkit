@@ -1,0 +1,44 @@
+{% extends "workflow/base.html" %}
+
+{% block content %}
+  <div class="topbar">
+    <div>
+      <p class="eyebrow">Demande #{{ modification_request.id }}</p>
+      <h1>{{ modification_request.contract_number }}</h1>
+    </div>
+    <span class="status status-{{ modification_request.status }}">{{ modification_request.get_status_display }}</span>
+  </div>
+  <section class="panel grid two">
+    <div><p class="eyebrow">Demande par</p><strong>{{ modification_request.requested_by.username }}</strong></div>
+    <div><p class="eyebrow">Creee le</p><strong>{{ modification_request.created_at|date:"d/m/Y H:i" }}</strong></div>
+    <div><p class="eyebrow">Commentaire</p><strong>{{ modification_request.comment|default:"-" }}</strong></div>
+    <div><p class="eyebrow">Echec</p><strong>{{ modification_request.failure_reason|default:"-" }}</strong></div>
+  </section>
+  <table>
+    <thead><tr><th>Libelle</th><th>Colonne</th><th>Nouvelle valeur</th></tr></thead>
+    <tbody>
+      {% for item in modification_request.items.all %}
+        <tr><td>{{ item.label_snapshot }}</td><td>{{ item.db_column_snapshot }}</td><td>{{ item.new_value|default:"(champ vide)" }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <section class="panel">
+    <h2>SQL genere</h2>
+    <code class="sql">{{ sql_preview }}</code>
+    <p class="hint">Apercu lisible. L'execution utilise des parametres.</p>
+  </section>
+  {% if modification_request.status == "pending" or modification_request.status == "failed" %}
+    <div class="actions">
+      <form method="post" action="{% url 'approve_request' modification_request.id %}">
+        {% csrf_token %}
+        <button type="submit">Approuver</button>
+      </form>
+      {% if modification_request.status == "pending" %}
+        <form method="post" action="{% url 'reject_request' modification_request.id %}">
+          {% csrf_token %}
+          <button class="danger" type="submit">Rejeter</button>
+        </form>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}

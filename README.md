@@ -2,6 +2,51 @@
 
 Petite application locale pour remplacer les demandes de modification envoyees par email.
 
+## Nouvelle version Python/Django
+
+Une version Python est disponible en parallele du frontend Next.js existant. Elle utilise Django pour garder l'application simple mais plus sure :
+
+- authentification Django avec mots de passe hashes
+- sessions et protection CSRF integrees
+- roles simples : `admin` = utilisateur staff, `agent` = utilisateur non-staff
+- workflow agent/admin avec audit
+- mise a jour directe de la base cible depuis Python, sans bridge HTTP
+
+### Test local avant push
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python manage.py test workflow
+.venv/bin/python manage.py migrate
+.venv/bin/python manage.py seed_demo
+.venv/bin/python manage.py init_target_sqlite
+.venv/bin/python manage.py runserver 127.0.0.1:8000
+```
+
+Ouvrir `http://127.0.0.1:8000`.
+
+Comptes locaux :
+
+- `admin` / `admin123`
+- `agent` / `agent123`
+
+Par defaut, l'approbation met a jour `target.sqlite3`, table `CRCON`, ligne `NODOSS=1045810`. C'est le moyen le plus simple de tester tout le parcours sans toucher a IBM i. Pour la cible SQLite locale, les variables dediees sont `TARGET_SQLITE_PATH`, `TARGET_SQLITE_TABLE` et `TARGET_SQLITE_KEY_COLUMN`; elles evitent les conflits avec une configuration IBM i deja presente dans `.env`.
+
+Pour cibler IBM i/ODBC directement depuis Django, lance l'application sur la machine qui possede le driver ODBC et configure :
+
+```txt
+TARGET_DB=odbc
+ODBC_CONNECTION_STRING=DSN=EVOLAN_DEV;UID=adm;PWD=TON_MOT_DE_PASSE
+TARGET_TABLE=ASSALAFDTA.CRDEM
+TARGET_KEY_COLUMN=NODOSS
+DJANGO_SECRET_KEY=change-this-production-secret
+DJANGO_DEBUG=false
+```
+
+Le bridge Python historique n'est pas utilise par la version Django.
+Si ton ancien `.env` contient encore `TARGET_DB=bridge`, la version Django le traite comme une cible SQLite locale. Mets explicitement `TARGET_DB=odbc` pour parler a IBM i depuis Python.
+
 ## Comptes
 
 L'authentification est volontairement simple et codee en dur :

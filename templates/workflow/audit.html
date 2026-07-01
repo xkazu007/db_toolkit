@@ -1,0 +1,21 @@
+{% extends "workflow/base.html" %}
+
+{% block content %}
+  <div class="topbar"><div><p class="eyebrow">Espace administrateur</p><h1>Journal d'audit</h1></div></div>
+  <table>
+    <thead><tr><th>Date</th><th>Acteur</th><th>Action</th><th>Demande</th><th>Details</th></tr></thead>
+    <tbody>
+      {% for log in logs %}
+        <tr>
+          <td>{{ log.created_at|date:"d/m/Y H:i" }}</td>
+          <td>{{ log.actor.username|default:"-" }}</td>
+          <td>{{ log.action }}</td>
+          <td>{% if log.request %}#{{ log.request.id }}{% else %}-{% endif %}</td>
+          <td><code>{{ log.details|default:"-" }}</code></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5">Aucun evenement.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

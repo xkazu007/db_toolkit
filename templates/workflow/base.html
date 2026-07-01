@@ -1,0 +1,47 @@
+{% load static %}
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Demandes de modification</title>
+    <link rel="stylesheet" href="{% static 'workflow/app.css' %}">
+  </head>
+  <body>
+    <div class="shell">
+      {% if user.is_authenticated %}
+        <aside class="side">
+          <div>
+            <div class="brand">DB Toolkit</div>
+            <nav class="nav">
+              {% if user.is_staff %}
+                <a href="{% url 'admin_requests' %}">Demandes</a>
+                <a href="{% url 'mappings' %}">Champs</a>
+                <a href="{% url 'users' %}">Utilisateurs</a>
+                <a href="{% url 'audit' %}">Audit</a>
+              {% else %}
+                <a href="{% url 'agent_requests' %}">Mes demandes</a>
+                <a href="{% url 'new_agent_request' %}">Nouvelle demande</a>
+              {% endif %}
+            </nav>
+          </div>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <p class="account">{{ user.username }}</p>
+            <button class="secondary full" type="submit">Se deconnecter</button>
+          </form>
+        </aside>
+      {% endif %}
+      <main class="main">
+        {% if messages %}
+          <div class="messages">
+            {% for message in messages %}
+              <p class="message {{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </body>
+</html>

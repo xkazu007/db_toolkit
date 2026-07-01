@@ -1,0 +1,24 @@
+<form method="post" class="form compact">
+  {% csrf_token %}
+  <input type="hidden" name="id" value="{{ mapping.id }}">
+  <div class="grid two">
+    <label>Libelle <input name="label" required value="{{ mapping.label }}"></label>
+    <label>Colonne <input name="db_column" required value="{{ mapping.db_column }}"></label>
+  </div>
+  <div class="grid two">
+    <label>Type
+      <select name="data_type">
+        {% for value,label in data_types %}
+          <option value="{{ value }}" {% if mapping.data_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Aide <input name="help_text" value="{{ mapping.help_text }}"></label>
+  </div>
+  <label>Note admin <textarea name="admin_note">{{ mapping.admin_note }}</textarea></label>
+  <div class="actions">
+    <label class="check"><input type="checkbox" name="is_required" {% if mapping.is_required or not mapping %}checked{% endif %}> Obligatoire</label>
+    <label class="check"><input type="checkbox" name="is_active" {% if mapping.is_active or not mapping %}checked{% endif %}> Actif</label>
+    <button type="submit">Enregistrer</button>
+  </div>
+</form>

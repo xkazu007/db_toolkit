@@ -1,0 +1,28 @@
+{% extends "workflow/base.html" %}
+
+{% block content %}
+  <div class="topbar"><div><p class="eyebrow">Espace administrateur</p><h1>Champs modifiables</h1></div></div>
+  <section class="panel">
+    <h2>Nouveau champ</h2>
+    {% include "workflow/partials/mapping_form.html" %}
+  </section>
+  <table>
+    <thead><tr><th>Libelle</th><th>Colonne</th><th>Type</th><th>Actif</th><th>Modifier</th></tr></thead>
+    <tbody>
+      {% for mapping in mappings %}
+        <tr>
+          <td>{{ mapping.label }}</td>
+          <td>{{ mapping.db_column }}</td>
+          <td>{{ mapping.get_data_type_display }}</td>
+          <td>{{ mapping.is_active|yesno:"Oui,Non" }}</td>
+          <td>
+            <details>
+              <summary>Editer</summary>
+              {% include "workflow/partials/mapping_form.html" with mapping=mapping %}
+            </details>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

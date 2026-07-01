@@ -1,0 +1,41 @@
+{% extends "workflow/base.html" %}
+
+{% block content %}
+  <div class="topbar"><div><p class="eyebrow">Espace administrateur</p><h1>Utilisateurs</h1></div></div>
+  <section class="panel">
+    <h2>Creer un utilisateur</h2>
+    <form method="post" class="form">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <label>Role
+        <select name="role">
+          <option value="agent">agent</option>
+          <option value="admin">admin</option>
+        </select>
+      </label>
+      <button type="submit">Creer</button>
+    </form>
+  </section>
+  <table>
+    <thead><tr><th>Identifiant</th><th>Role</th><th>Actif</th><th>Action</th></tr></thead>
+    <tbody>
+      {% for item in users %}
+        <tr>
+          <td>{{ item.username }}</td>
+          <td>{% if item.is_staff %}admin{% else %}agent{% endif %}</td>
+          <td>{{ item.is_active|yesno:"Oui,Non" }}</td>
+          <td>
+            {% if item.id != user.id %}
+              <form method="post" action="{% url 'toggle_user' item.id %}">
+                {% csrf_token %}
+                <button class="secondary" type="submit">{% if item.is_active %}Desactiver{% else %}Activer{% endif %}</button>
+              </form>
+            {% else %}
+              -
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

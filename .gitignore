@@ -3,11 +3,17 @@ node_modules
 .next-build
 dev.db
 dev.db-journal
+django.sqlite3
+django.sqlite3-journal
+target.sqlite3
+target.sqlite3-journal
 .env
 .env.prod
 .env*.local
 .venv
 __pycache__
+__pycache__/
+**/__pycache__/
 *.pyc
 .pytest_cache
 db_toolkit_deploy.zip
