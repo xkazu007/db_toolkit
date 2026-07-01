@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{% static 'workflow/app.css' %}">
   </head>
   <body>
-    <div class="shell">
+    <div class="shell {% if not user.is_authenticated %}shell-guest{% endif %}">
       {% if user.is_authenticated %}
         <aside class="side">
           <div>
