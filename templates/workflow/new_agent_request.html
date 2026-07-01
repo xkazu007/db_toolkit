@@ -14,9 +14,12 @@
       <label>Commentaire <input name="comment" placeholder="Contexte optionnel"></label>
     </section>
     <section class="panel">
-      <h2>Modifications</h2>
+      <div class="section-head">
+        <h2>Modifications</h2>
+        <button class="secondary" type="button" id="add-modification">Ajouter un champ</button>
+      </div>
       {% for index in row_range %}
-        <div class="mod-row">
+        <div class="mod-row {% if not forloop.first %}is-hidden{% endif %}" data-mod-row>
           <label>Champ {{ forloop.counter }}
             <select name="mapping_{{ index }}">
               <option value="">Choisir un champ</option>
@@ -33,4 +36,15 @@
     </section>
     <button type="submit">Soumettre</button>
   </form>
+  <script>
+    const addButton = document.querySelector("#add-modification");
+    const hiddenRows = () => [...document.querySelectorAll("[data-mod-row].is-hidden")];
+
+    addButton?.addEventListener("click", () => {
+      const nextRow = hiddenRows()[0];
+      if (!nextRow) return;
+      nextRow.classList.remove("is-hidden");
+      if (hiddenRows().length === 0) addButton.setAttribute("disabled", "disabled");
+    });
+  </script>
 {% endblock %}

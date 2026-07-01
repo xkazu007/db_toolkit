@@ -56,6 +56,8 @@ button, input, select, textarea { font: inherit; }
 .eyebrow { color: var(--muted); font-size: 13px; margin: 0 0 6px; }
 h1 { font-size: 28px; margin: 0; }
 h2 { font-size: 18px; margin: 0 0 14px; }
+.section-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 14px; }
+.section-head h2 { margin: 0; }
 .panel, .login-panel {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -90,6 +92,7 @@ textarea { min-height: 80px; resize: vertical; }
 .check { display: flex; flex-direction: row; gap: 8px; align-items: center; color: var(--text); }
 .check input { width: 16px; height: 16px; }
 .mod-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 90px; gap: 14px; align-items: end; margin-bottom: 12px; }
+.is-hidden { display: none; }
 .actions, .filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 16px 0; }
 button, .button {
   display: inline-flex;
@@ -104,9 +107,11 @@ button, .button {
   cursor: pointer;
   font-weight: 700;
 }
-button:hover, .button:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+button:hover, .button:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: #fff; }
 .secondary { background: white; color: var(--text); border-color: var(--line); }
+.secondary:hover { background: #edf0ec; border-color: #b9beb7; color: var(--text); }
 .danger { background: var(--danger); border-color: var(--danger); }
+.danger:hover { color: #fff; }
 table { width: 100%; border-collapse: collapse; background: white; border: 1px solid var(--line); }
 th, td { padding: 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
 th { color: var(--muted); font-size: 13px; background: #fbfbf8; font-weight: 700; }
