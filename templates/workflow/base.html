@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Demandes de modification</title>
+    <title>VivaCorrect</title>
     <link rel="stylesheet" href="{% static 'workflow/app.css' %}">
   </head>
   <body>
@@ -12,7 +12,7 @@
       {% if user.is_authenticated %}
         <aside class="side">
           <div>
-            <div class="brand">DB Toolkit</div>
+            <div class="brand">VivaCorrect</div>
             <nav class="nav">
               {% if user.is_staff %}
                 <a href="{% url 'admin_requests' %}">Demandes</a>
