@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
-from workflow.models import AuditLog, FieldMapping, ModificationRequest, RequestStatus
+from workflow.models import AuditLog, FieldMapping, ModificationRequest, RequestStatus, TargetTable
 from workflow.services import RequestValidationError, approve_many, approve_request, create_audit_log, create_modification_request, reject_request
 from workflow.target_db import build_filled_update_preview
 
@@ -60,7 +60,10 @@ def agent_requests(request):
 def new_agent_request(request):
     if request.user.is_staff:
         return redirect("admin_requests")
-    mappings = FieldMapping.objects.filter(is_active=True)
+    target_tables = TargetTable.objects.filter(is_active=True)
+    selected_table_id = request.POST.get("target_table") or request.GET.get("target_table")
+    selected_table = target_tables.filter(id=selected_table_id).first() if selected_table_id else target_tables.first()
+    mappings = FieldMapping.objects.filter(is_active=True, target_table=selected_table) if selected_table else FieldMapping.objects.none()
     if request.method == "POST":
         rows = []
         for index in range(8):
@@ -76,6 +79,7 @@ def new_agent_request(request):
         try:
             create_modification_request(
                 actor=request.user,
+                target_table_id=selected_table.id if selected_table else None,
                 contract_number=request.POST.get("contract_number", ""),
                 comment=request.POST.get("comment", ""),
                 rows=rows,
@@ -85,13 +89,22 @@ def new_agent_request(request):
         else:
             messages.success(request, "Demande creee.")
             return redirect("agent_requests")
-    return render(request, "workflow/new_agent_request.html", {"mappings": mappings, "row_range": range(8)})
+    return render(
+        request,
+        "workflow/new_agent_request.html",
+        {
+            "mappings": mappings,
+            "row_range": range(8),
+            "target_tables": target_tables,
+            "selected_table": selected_table,
+        },
+    )
 
 
 @admin_required
 def admin_requests(request):
     status = request.GET.get("status", RequestStatus.PENDING)
-    requests = ModificationRequest.objects.select_related("requested_by").prefetch_related("items")
+    requests = ModificationRequest.objects.select_related("requested_by", "target_table").prefetch_related("items")
     if status != "all":
         requests = requests.filter(status=status)
     return render(
@@ -104,11 +117,17 @@ def admin_requests(request):
 @admin_required
 def admin_request_detail(request, request_id: int):
     modification_request = get_object_or_404(
-        ModificationRequest.objects.select_related("requested_by", "approved_by").prefetch_related("items"),
+        ModificationRequest.objects.select_related("requested_by", "approved_by", "target_table").prefetch_related("items"),
         id=request_id,
     )
     updates = [{"db_column": item.db_column_snapshot, "value": item.new_value} for item in modification_request.items.all()]
-    sql_preview = build_filled_update_preview(modification_request.contract_number, updates)
+    target_table = modification_request.target_table
+    sql_preview = build_filled_update_preview(
+        modification_request.contract_number,
+        updates,
+        table=target_table.db_table if target_table else None,
+        key_column=target_table.key_column if target_table else None,
+    )
     return render(
         request,
         "workflow/admin_request_detail.html",
@@ -163,9 +182,13 @@ def approve_all_view(request):
 
 @admin_required
 def mappings_view(request):
+    target_tables = TargetTable.objects.all()
+    selected_table_id = request.POST.get("target_table") or request.GET.get("target_table")
+    selected_table = target_tables.filter(id=selected_table_id).first() if selected_table_id else target_tables.first()
     if request.method == "POST":
         mapping_id = request.POST.get("id")
         payload = {
+            "target_table": selected_table,
             "label": request.POST.get("label", "").strip(),
             "db_column": request.POST.get("db_column", "").strip().upper(),
             "data_type": request.POST.get("data_type", FieldMapping.DataType.TEXT),
@@ -189,11 +212,17 @@ def mappings_view(request):
                 action = "mapping_created"
             create_audit_log(actor=request.user, action=action, details={"id": mapping.id, "db_column": mapping.db_column})
             messages.success(request, "Champ enregistre.")
-            return redirect("mappings")
+            return redirect(f"{reverse_lazy('mappings')}?target_table={selected_table.id}")
+    mappings = FieldMapping.objects.filter(target_table=selected_table) if selected_table else FieldMapping.objects.none()
     return render(
         request,
         "workflow/mappings.html",
-        {"mappings": FieldMapping.objects.all(), "data_types": FieldMapping.DataType.choices},
+        {
+            "mappings": mappings,
+            "data_types": FieldMapping.DataType.choices,
+            "target_tables": target_tables,
+            "selected_table": selected_table,
+        },
     )
 
 

@@ -2,6 +2,11 @@
 
 {% block content %}
   <div class="topbar"><div><p class="eyebrow">Espace administrateur</p><h1>Champs modifiables</h1></div></div>
+  <div class="filters">
+    {% for table in target_tables %}
+      <a class="button {% if not selected_table or table.id != selected_table.id %}secondary{% endif %}" href="{% url 'mappings' %}?target_table={{ table.id }}">{{ table.name }}</a>
+    {% endfor %}
+  </div>
   <section class="panel">
     <h2>Nouveau champ</h2>
     {% include "workflow/partials/mapping_form.html" %}

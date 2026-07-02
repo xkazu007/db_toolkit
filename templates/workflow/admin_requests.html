@@ -20,13 +20,14 @@
     {% csrf_token %}
     <table>
       <thead>
-        <tr><th></th><th>ID</th><th>Num contrat</th><th>Demande par</th><th>Statut</th><th>Champs</th><th>Creee le</th><th>Ouvrir</th></tr>
+        <tr><th></th><th>ID</th><th>Table</th><th>Num contrat</th><th>Demande par</th><th>Statut</th><th>Modifs</th><th>Creee le</th><th>Ouvrir</th></tr>
       </thead>
       <tbody>
         {% for item in requests %}
           <tr>
             <td>{% if item.status == "pending" %}<input type="checkbox" name="request_id" value="{{ item.id }}">{% else %}-{% endif %}</td>
             <td>#{{ item.id }}</td>
+            <td>{{ item.target_table.name|default:"-" }}</td>
             <td>{{ item.contract_number }}</td>
             <td>{{ item.requested_by.username }}</td>
             <td><span class="status status-{{ item.status }}">{{ item.get_status_display }}</span></td>
@@ -35,7 +36,7 @@
             <td><a href="{% url 'admin_request_detail' item.id %}">Revoir</a></td>
           </tr>
         {% empty %}
-          <tr><td colspan="8">Aucune demande pour ce filtre.</td></tr>
+          <tr><td colspan="9">Aucune demande pour ce filtre.</td></tr>
         {% endfor %}
       </tbody>
     </table>

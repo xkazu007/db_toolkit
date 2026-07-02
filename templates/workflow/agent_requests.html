@@ -10,12 +10,13 @@
   </div>
   <table>
     <thead>
-      <tr><th>ID</th><th>Num contrat</th><th>Statut</th><th>Champs</th><th>Creee le</th><th>Echec</th></tr>
+      <tr><th>ID</th><th>Table</th><th>Num contrat</th><th>Statut</th><th>Modifs</th><th>Creee le</th><th>Echec</th></tr>
     </thead>
     <tbody>
       {% for item in requests %}
         <tr>
           <td>#{{ item.id }}</td>
+          <td>{{ item.target_table.name|default:"-" }}</td>
           <td>{{ item.contract_number }}</td>
           <td><span class="status status-{{ item.status }}">{{ item.get_status_display }}</span></td>
           <td>{{ item.items.count }}</td>
@@ -23,7 +24,7 @@
           <td>{{ item.failure_reason|default:"-" }}</td>
         </tr>
       {% empty %}
-        <tr><td colspan="6">Aucune demande pour le moment.</td></tr>
+        <tr><td colspan="7">Aucune demande pour le moment.</td></tr>
       {% endfor %}
     </tbody>
   </table>

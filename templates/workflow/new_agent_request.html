@@ -10,7 +10,16 @@
   <form method="post" class="form">
     {% csrf_token %}
     <section class="panel grid two">
+      <label>Table cible
+        <select name="target_table" required onchange="window.location.href='?target_table=' + this.value">
+          {% for table in target_tables %}
+            <option value="{{ table.id }}" {% if selected_table and table.id == selected_table.id %}selected{% endif %}>{{ table.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
       <label>Num contrat actuel <input name="contract_number" required placeholder="1045810"></label>
+    </section>
+    <section class="panel">
       <label>Commentaire <input name="comment" placeholder="Contexte optionnel"></label>
     </section>
     <section class="panel">

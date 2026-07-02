@@ -1,6 +1,7 @@
 <form method="post" class="form compact">
   {% csrf_token %}
   <input type="hidden" name="id" value="{{ mapping.id }}">
+  <input type="hidden" name="target_table" value="{% if mapping.target_table_id %}{{ mapping.target_table_id }}{% else %}{{ selected_table.id }}{% endif %}">
   <div class="grid two">
     <label>Libelle <input name="label" required value="{{ mapping.label }}"></label>
     <label>Colonne <input name="db_column" required value="{{ mapping.db_column }}"></label>

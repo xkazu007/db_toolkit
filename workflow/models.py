@@ -17,6 +17,7 @@ class FieldMapping(models.Model):
         DATE = "date", "Date"
         ENUM = "enum", "Liste"
 
+    target_table = models.ForeignKey("TargetTable", on_delete=models.CASCADE, related_name="field_mappings", null=True, blank=True)
     label = models.CharField(max_length=180)
     db_column = models.CharField(max_length=80)
     data_type = models.CharField(max_length=20, choices=DataType.choices, default=DataType.TEXT)
@@ -30,7 +31,7 @@ class FieldMapping(models.Model):
 
     class Meta:
         ordering = ["label"]
-        indexes = [models.Index(fields=["db_column"])]
+        indexes = [models.Index(fields=["target_table", "db_column"])]
 
     def save(self, *args, **kwargs):
         self.db_column = self.db_column.strip().upper()
@@ -40,7 +41,29 @@ class FieldMapping(models.Model):
         return f"{self.label} -> {self.db_column}"
 
 
+class TargetTable(models.Model):
+    name = models.CharField(max_length=120)
+    db_table = models.CharField(max_length=120)
+    key_column = models.CharField(max_length=80, default="NODOSS")
+    is_active = models.BooleanField(default=True)
+    description = models.CharField(max_length=250, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def save(self, *args, **kwargs):
+        self.db_table = self.db_table.strip().upper()
+        self.key_column = self.key_column.strip().upper()
+        super().save(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return self.name
+
+
 class ModificationRequest(models.Model):
+    target_table = models.ForeignKey(TargetTable, on_delete=models.PROTECT, related_name="requests", null=True, blank=True)
     contract_number = models.CharField(max_length=80)
     status = models.CharField(max_length=20, choices=RequestStatus.choices, default=RequestStatus.PENDING)
     requested_by = models.ForeignKey(

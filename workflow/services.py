@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from django.utils import timezone
 
-from workflow.models import AuditLog, FieldMapping, ModificationRequest, ModificationRequestItem, RequestStatus
+from workflow.models import AuditLog, FieldMapping, ModificationRequest, ModificationRequestItem, RequestStatus, TargetTable
 from workflow.target_db import TargetResult, update_target_contract
 
 
@@ -18,6 +18,7 @@ def create_audit_log(*, actor: User | None, action: str, request: ModificationRe
 def create_modification_request(
     *,
     actor: User,
+    target_table_id: int | None = None,
     contract_number: str,
     rows: list[dict],
     comment: str | None = None,
@@ -39,13 +40,18 @@ def create_modification_request(
     if any(not row["empty"] and row["new_value"] == "" for row in cleaned_rows):
         raise RequestValidationError("Chaque modification doit avoir une valeur.")
 
-    mappings = FieldMapping.objects.filter(id__in=mapping_ids).filter(is_active=True)
+    target_table = TargetTable.objects.filter(id=target_table_id, is_active=True).first() if target_table_id else TargetTable.objects.filter(is_active=True).first()
+    if not target_table:
+        raise RequestValidationError("Choisissez une table cible active.")
+
+    mappings = FieldMapping.objects.filter(id__in=mapping_ids, target_table=target_table).filter(is_active=True)
     mappings_by_id = {mapping.id: mapping for mapping in mappings}
     if len(mappings_by_id) != len(cleaned_rows):
         raise RequestValidationError("Un champ selectionne n'est pas actif.")
 
     request = ModificationRequest.objects.create(
         contract_number=contract_number,
+        target_table=target_table,
         requested_by=actor,
         comment=(comment or "").strip(),
     )
@@ -63,7 +69,7 @@ def create_modification_request(
         actor=actor,
         action="request_created",
         request=request,
-        details={"contract_number": request.contract_number, "item_count": len(cleaned_rows)},
+        details={"contract_number": request.contract_number, "target_table": target_table.db_table, "item_count": len(cleaned_rows)},
     )
     return request
 
@@ -88,15 +94,22 @@ def approve_request(*, actor: User, request_id: int) -> tuple[ModificationReques
         raise RequestValidationError("Cette demande ne peut pas etre approuvee.")
 
     items = list(request.items.all())
+    target_table = request.target_table or TargetTable.objects.filter(is_active=True).first()
+    if not target_table:
+        return mark_failed(actor=actor, request=request, reason="Aucune table cible active n'est configuree.")
     allowed_columns = set(
-        FieldMapping.objects.filter(db_column__in=[item.db_column_snapshot for item in items], is_active=True).values_list("db_column", flat=True)
+        FieldMapping.objects.filter(
+            target_table=target_table,
+            db_column__in=[item.db_column_snapshot for item in items],
+            is_active=True,
+        ).values_list("db_column", flat=True)
     )
     updates = [{"db_column": item.db_column_snapshot, "value": item.new_value} for item in items]
 
     if any(update["db_column"] not in allowed_columns for update in updates):
         return mark_failed(actor=actor, request=request, reason="La demande contient une colonne qui n'est plus autorisee.")
 
-    result = update_target_contract(request.contract_number, updates)
+    result = update_target_contract(request.contract_number, updates, table=target_table.db_table, key_column=target_table.key_column)
     if not result.ok:
         return mark_failed(actor=actor, request=request, reason=result.error or "La mise a jour a echoue.", result=result)
 
